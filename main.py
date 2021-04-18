@@ -106,13 +106,26 @@ def add_post():
 def post_delete(id):
     db_sess = db_session.create_session()
     post = db_sess.query(Post).filter(Post.id == id,
-                                    ((Post.creator == current_user) | (current_user.id == 1))).first()
+                                      ((Post.creator == current_user) | (current_user.id == 1))).first()
     if post:
         db_sess.delete(post)
         db_sess.commit()
     else:
         abort(404)
     return redirect('/')
+
+
+@app.route('/subscriptions')
+@login_required
+def subscriptions_list():
+    # страница со списком подаисок пользователя
+    db_sess = db_session.create_session()
+    subscriptions = list(map(int(current_user.subscriptions.split(','))))
+    # список id пользователей на которых подписан текущий пользователь
+
+    users = db_sess.query(User).filter(User.id in subscriptions)
+    # список нужных постов (те, у кого создатель - тот на кого подписан пользователь)
+    return render_template("subscriptions_list.html", title='подписки', users=users)
 
 
 @app.route('/logout')
