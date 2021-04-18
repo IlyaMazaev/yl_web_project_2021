@@ -14,7 +14,6 @@ class Post(SqlAlchemyBase, SerializerMixin):
     user = orm.relation('User')
 
     text = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-    content_link = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-    # путь к фаилу прикреплённой картинки
+
     modified_date = sqlalchemy.Column(sqlalchemy.DateTime,
                                       default=datetime.datetime.now)
