@@ -28,13 +28,14 @@ def index():
     # главная страница
     db_sess = db_session.create_session()
 
-    user = db_sess.query(Post).filter(User.id == current_user.id).first()
-    # текщий пользователь
-    subscriptions_list = list(map(int(user.subscriptions.split(','))))
+    subscriptions_list = get_subscriptions_list()
     # список id пользователей на которых подписан текущий пользователь
 
     posts = db_sess.query(Post).filter(Post.creator.in_(subscriptions_list))
     # список нужных постов (те, у кого создатель - тот на кого подписан пользователь)
+
+    # posts.reverse() - 'Query' object has no attribute 'reverse'
+    # для отображения последних новостей сверху списка
     return render_template("index.html", title='записи', posts=posts)
 
 
@@ -138,9 +139,8 @@ def post_delete(id):
 def subscriptions_list():
     # страница со списком подписок пользователя
     db_sess = db_session.create_session()
-    user = db_sess.query(Post).filter(User.id == current_user.id).first()
-    # текщий пользователь
-    subscriptions_list = list(map(int(user.subscriptions.split(','))))
+
+    subscriptions_list = get_subscriptions_list()
     # список id пользователей на которых подписан текущий пользователь
 
     users = db_sess.query(User).filter(User.id.in_(subscriptions_list))
@@ -153,9 +153,8 @@ def subscriptions_list():
 def all_users_list():
     # страница со списком других пользоветелей (посик новых подписок в сети)
     db_sess = db_session.create_session()
-    user = db_sess.query(Post).filter(User.id == current_user.id).first()
-    # текщий пользователь
-    subscriptions_list = list(map(int(user.subscriptions.split(','))))
+
+    subscriptions_list = get_subscriptions_list()
     # список id пользователей на которых подписан текущий пользователь
 
     users = db_sess.query(User).filter(User.id.notin_(subscriptions_list))
@@ -168,9 +167,9 @@ def all_users_list():
 def subscribe(id):
     db_sess = db_session.create_session()
 
-    user = db_sess.query(Post).filter(User.id == current_user.id).first()
-    # текщий пользователь
-    subscriptions_list = list(map(int(user.subscriptions.split(','))))
+    user = db_sess.query(User).get(current_user.id)
+    # текущий пользователь
+    subscriptions_list = get_subscriptions_list()
     # список id пользователей на которых подписан текущий пользователь
     subscriptions_list.append(id)
     # удаление id  в список
@@ -186,9 +185,9 @@ def subscribe(id):
 def unsubscribe(id):
     db_sess = db_session.create_session()
 
-    user = db_sess.query(Post).filter(User.id == current_user.id).first()
-    # текщий пользователь
-    subscriptions_list = list(map(int(user.subscriptions.split(','))))
+    user = db_sess.query(User).get(current_user.id)
+    # текущий пользователь
+    subscriptions_list = get_subscriptions_list()
     # список id пользователей на которых подписан текущий пользователь
 
     subscriptions_list.remove(id)
@@ -210,6 +209,20 @@ def logout():
 def load_user(user_id):
     db_sess = db_session.create_session()
     return db_sess.query(User).get(user_id)
+
+
+def get_subscriptions_list():
+    db_sess = db_session.create_session()
+
+    user = db_sess.query(User).get(current_user.id)
+    # текущий пользователь
+    if user.subscriptions:
+        subscriptions = list(map(int, user.subscriptions.split(',')))
+    else:
+        subscriptions = []
+    # список id пользователей на которых подписан текущий пользователь
+
+    return subscriptions
 
 
 if __name__ == '__main__':
