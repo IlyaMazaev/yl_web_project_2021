@@ -23,7 +23,7 @@ def main():
 
 
 @app.route('/')
-@app.route('/index')
+@app.route('/posts')
 def index():
     # главная страница
     db_sess = db_session.create_session()
@@ -31,8 +31,19 @@ def index():
     subscriptions = list(map(int(current_user.subscriptions.split(','))))
     # список id пользователей на которых подписан текущий пользователь
 
-    posts = db_sess.query(Post).filter(Post.creator in subscriptions)
+    posts = db_sess.query(Post).filter(Post.creator.in_(subscriptions))
     # список нужных постов (те, у кого создатель - тот на кого подписан пользователь)
+    return render_template("index.html", title='записи', posts=posts)
+
+
+@app.route('/')
+@app.route('/posts/<int:creator>')
+def users_posts(creator):
+    # главная страница с записами только определённого пользователя
+    db_sess = db_session.create_session()
+
+    posts = db_sess.query(Post).filter(Post.creator == creator)
+    # список нужных постов (те, у кого создатель - переденный параметр)
     return render_template("index.html", title='записи', posts=posts)
 
 
@@ -118,14 +129,64 @@ def post_delete(id):
 @app.route('/subscriptions')
 @login_required
 def subscriptions_list():
-    # страница со списком подаисок пользователя
+    # страница со списком подписок пользователя
     db_sess = db_session.create_session()
     subscriptions = list(map(int(current_user.subscriptions.split(','))))
     # список id пользователей на которых подписан текущий пользователь
 
-    users = db_sess.query(User).filter(User.id in subscriptions)
+    users = db_sess.query(User).filter(User.id.in_(subscriptions))
     # список нужных постов (те, у кого создатель - тот на кого подписан пользователь)
     return render_template("subscriptions_list.html", title='подписки', users=users)
+
+
+@app.route('/all_users')
+@login_required
+def all_users_list():
+    # страница со списком других пользоветелей (посик новых подписок в сети)
+    db_sess = db_session.create_session()
+    subscriptions = list(map(int(current_user.subscriptions.split(','))))
+    # список id пользователей на которых не подписан текущий пользователь
+
+    users = db_sess.query(User).filter(User.id.notin_(subscriptions))
+    # список нужных постов (те, у кого создатель - тот на кого не подписан пользователь)
+    return render_template("subscriptions_list.html", title='подписки', users=users)
+
+
+@app.route('/subscribe/<int:id>')
+@login_required
+def subscribe(id):
+    db_sess = db_session.create_session()
+
+    user = db_sess.query(Post).filter(User.id == current_user.id).first()
+    # текщий пользователь
+    subscriptions_list = list(map(int(user.subscriptions.split(','))))
+    # список id пользователей на которых подписан текущий пользователь
+    subscriptions_list.append(id)
+    # удаление id  в список
+    user.subscribtions = ', '.join(sorted(subscriptions_list))
+    db_sess.commit()
+    # запись изменнений в user и базу данных
+
+    # redirect(/all_users)
+
+
+@app.route('/unsubscribe/<int:id>')
+@login_required
+def unsubscribe(id):
+    db_sess = db_session.create_session()
+
+    user = db_sess.query(Post).filter(User.id == current_user.id).first()
+    # текщий пользователь
+    subscriptions_list = list(map(int(user.subscriptions.split(','))))
+    # список id пользователей на которых подписан текущий пользователь
+
+    subscriptions_list.remove(id)
+    # удаление id из списка
+    user.subscribtions = ', '.join(subscriptions_list)
+    db_sess.commit()
+    # запись изменнений в user и базу данных
+
+    # redirect(/subscriptions)
 
 
 @app.route('/logout')
