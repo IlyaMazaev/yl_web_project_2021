@@ -28,10 +28,12 @@ def index():
     # главная страница
     db_sess = db_session.create_session()
 
-    subscriptions = list(map(int(current_user.subscriptions.split(','))))
+    user = db_sess.query(Post).filter(User.id == current_user.id).first()
+    # текщий пользователь
+    subscriptions_list = list(map(int(user.subscriptions.split(','))))
     # список id пользователей на которых подписан текущий пользователь
 
-    posts = db_sess.query(Post).filter(Post.creator.in_(subscriptions))
+    posts = db_sess.query(Post).filter(Post.creator.in_(subscriptions_list))
     # список нужных постов (те, у кого создатель - тот на кого подписан пользователь)
     return render_template("index.html", title='записи', posts=posts)
 
@@ -98,13 +100,18 @@ def add_post():
         # запсь в Post текста записи и создателя
         post = Post(text=form.text.data,
                     creator=current_user.id)
+
         if form.file.data:
-            # если прикреплён фаил:
-            file_data = request.FILES[form.file.name].read()
-            # читаем данные фаила
-            open(f'db/users_content_data/file_{post.id}.{form.file.name.split(".")[-1]}', 'w').write(file_data)
-            # запись фаила в папке db/users_content_data c именем file_id поста к которому
-            # относится запись и расширение исходного фила
+            # если есть файл
+            file = form.file.data
+
+            # нахожу последний id
+            if db_sess.query(Post).all():
+                last_id = db_sess.query(Post).all()[-1].id
+            else:
+                last_id = 0
+            # сохраниение фаила с именем "file_id записи к которой он отностися.тип фаила"
+            file.save(f'db/users_content_data/file_{last_id + 1}.{file.filename.split(".")[-1]}')
 
         db_sess.add(post)
         db_sess.commit()
@@ -131,10 +138,12 @@ def post_delete(id):
 def subscriptions_list():
     # страница со списком подписок пользователя
     db_sess = db_session.create_session()
-    subscriptions = list(map(int(current_user.subscriptions.split(','))))
+    user = db_sess.query(Post).filter(User.id == current_user.id).first()
+    # текщий пользователь
+    subscriptions_list = list(map(int(user.subscriptions.split(','))))
     # список id пользователей на которых подписан текущий пользователь
 
-    users = db_sess.query(User).filter(User.id.in_(subscriptions))
+    users = db_sess.query(User).filter(User.id.in_(subscriptions_list))
     # список нужных постов (те, у кого создатель - тот на кого подписан пользователь)
     return render_template("subscriptions_list.html", title='подписки', users=users)
 
@@ -144,10 +153,12 @@ def subscriptions_list():
 def all_users_list():
     # страница со списком других пользоветелей (посик новых подписок в сети)
     db_sess = db_session.create_session()
-    subscriptions = list(map(int(current_user.subscriptions.split(','))))
-    # список id пользователей на которых не подписан текущий пользователь
+    user = db_sess.query(Post).filter(User.id == current_user.id).first()
+    # текщий пользователь
+    subscriptions_list = list(map(int(user.subscriptions.split(','))))
+    # список id пользователей на которых подписан текущий пользователь
 
-    users = db_sess.query(User).filter(User.id.notin_(subscriptions))
+    users = db_sess.query(User).filter(User.id.notin_(subscriptions_list))
     # список нужных постов (те, у кого создатель - тот на кого не подписан пользователь)
     return render_template("subscriptions_list.html", title='подписки', users=users)
 
@@ -167,7 +178,7 @@ def subscribe(id):
     db_sess.commit()
     # запись изменнений в user и базу данных
 
-    # redirect(/all_users)
+    # return redirect(/all_users)
 
 
 @app.route('/unsubscribe/<int:id>')
@@ -186,7 +197,7 @@ def unsubscribe(id):
     db_sess.commit()
     # запись изменнений в user и базу данных
 
-    # redirect(/subscriptions)
+    # return redirect(/subscriptions)
 
 
 @app.route('/logout')
