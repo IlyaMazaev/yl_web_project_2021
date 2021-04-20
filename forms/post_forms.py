@@ -5,7 +5,7 @@ from wtforms.validators import DataRequired
 
 
 class AddNewPostForm(FlaskForm):
-    text = StringField('текст записи', validators=[DataRequired()])
+    text = StringField('Текст записи', validators=[DataRequired()])
     file = FileField('Прикрепите картинку')
 
     submit = SubmitField('Подтвердить')

@@ -88,7 +88,7 @@ def login():
     return render_template('login.html', title='Авторизация', form=form)
 
 
-@app.route('/addpost', methods=['GET', 'POST'])
+@app.route('/add_post', methods=['GET', 'POST'])
 @login_required
 def add_post():
     # добавление нового поста
