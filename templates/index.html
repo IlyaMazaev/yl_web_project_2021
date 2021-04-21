@@ -1,39 +1,4 @@
-{% extends "base.html" %}
-
+{% extends 'base.html' %}
 {% block content %}
-<a href="departments" class="btn btn-secondary">Просмотреть департаменты</a>
-{% if current_user.is_authenticated %}
-    <a href="addjob" class="btn btn-primary">Добавить новую работу</a>
-{% endif %}
-<h2>Ведутся работы:</h2>
-{% for item in jobs%}
-<div class="col-md6 border rounded">
-    <h3>{{item.job}}</h3>
-
-    <p>
-        <li>ID руководителя - {{item.team_leader}}</li>
-        <li>Требуемое время(часы) - {{item.work_size}}</li>
-        <li>Список ID сотрудников - {{item.collaborators}}</li>
-        <li>Дата начала - {{item.start_date}}</li>
-        <li>Дата окончания - {{item.end_date}}</li>
-        {% if item.is_finished %}
-            <li>Работа завершена</li>
-        {% else %}
-            <li>В работе</li>
-        {% endif %}
-    </p>
-    {% if (current_user.is_authenticated and current_user == item.user) or current_user.id == 1 %}
-    <div>
-        <a href="/jobs/{{ item.id }}" class="btn btn-warning">
-            Изменить
-        </a>
-        <a href="/jobs_delete/{{ item.id }}" class="btn btn-danger">
-            Удалить
-        </a>
-    </div>
-{% endif %}
-    <p></p>
-</div>
-<p></p>
-{% endfor %}
+<a class="btn btn-secondary" href="/add_post">Новая запись</a>
 {% endblock %}
