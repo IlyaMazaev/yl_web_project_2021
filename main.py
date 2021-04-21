@@ -9,6 +9,8 @@ from data.users import User
 from forms.post_forms import AddNewPostForm
 from forms.user_forms import RegisterForm, LoginForm
 
+import os
+
 app = Flask(__name__)
 run_with_ngrok(app)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -33,17 +35,27 @@ def index():
         # список id пользователей на которых подписан текущий пользователь
 
         posts = db_sess.query(Post).filter(Post.creator.in_(subscriptions_list)) # .order_by(-1 * Post.id)
+        posts_for_template = []
+        for post in posts:
+            posts_for_template.append((post, os.path.exists(f'db/users_content_data/file_{post.id}.jpg')))
+            print(f'file_{post.id}.jpg')
+        print(posts_for_template)
         # список нужных постов (те, у кого создатель - тот на кого подписан пользователь)
 
-        return render_template("index.html", title='записи', posts=posts)
+        return render_template("index.html", title='записи', posts=posts_for_template)
 
     except AttributeError:
         # если пользователь не зарегистрировани, то показываются все новости всех пользователей
         db_sess = db_session.create_session()
 
         posts = db_sess.query(Post).all() # .order_by(-1 * Post.id)
+        posts_for_template = []
+        for post in posts:
+            posts_for_template.append((post, os.path.exists(f'db/users_content_data/file_{post.id}.jpg')))
+            print(f'file_{post.id}.jpg')
+        print(posts_for_template)
         # список всех постов
-        return render_template("index.html", title='записи', posts=posts)
+        return render_template("index.html", title='записи', posts=posts_for_template)
 
 
 @app.route('/')
@@ -118,8 +130,8 @@ def add_post():
                 last_id = db_sess.query(Post).all()[-1].id
             else:
                 last_id = 0
-            # сохраниение фаила с именем "file_id записи к которой он отностися.тип фаила"
-            file.save(f'db/users_content_data/file_{last_id + 1}.{file.filename.split(".")[-1]}')
+            # сохраниение фаила с именем "file_id записи к которой он отностися.jpg"
+            file.save(f'db/users_content_data/file_{last_id + 1}.jpg')
 
         db_sess.add(post)
         db_sess.commit()
