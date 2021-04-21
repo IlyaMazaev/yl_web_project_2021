@@ -203,6 +203,12 @@ def unsubscribe(id):
     # return redirect(/subscriptions)
 
 
+@app.route('/confirm_logout')
+@login_required
+def confirm_logout():
+    return render_template('confirm_logout.html', title='Подтверждение выхода')
+
+
 @app.route('/logout')
 def logout():
     logout_user()
@@ -218,7 +224,6 @@ def load_user(user_id):
 def get_subscriptions_list():
     # получение списка подписок текущего пользователя
     db_sess = db_session.create_session()
-
 
     user = db_sess.query(User).get(current_user.id)
     print(user.name, user.surname, user.id,)
