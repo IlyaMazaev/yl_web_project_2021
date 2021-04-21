@@ -32,15 +32,18 @@ def index():
         subscriptions_list = get_subscriptions_list()
         # список id пользователей на которых подписан текущий пользователь
 
-        posts = db_sess.query(Post).filter(Post.creator.in_(subscriptions_list))
+        posts = db_sess.query(Post).filter(Post.creator.in_(subscriptions_list)) # .order_by(-1 * Post.id)
         # список нужных постов (те, у кого создатель - тот на кого подписан пользователь)
 
-        # posts.reverse() - 'Query' object has no attribute 'reverse'
-        # для отображения последних новостей сверху списка
         return render_template("index.html", title='записи', posts=posts)
 
     except AttributeError:
-        return redirect("/login")
+        # если пользователь не зарегистрировани, то показываются все новости всех пользователей
+        db_sess = db_session.create_session()
+
+        posts = db_sess.query(Post).all() # .order_by(-1 * Post.id)
+        # список всех постов
+        return render_template("index.html", title='записи', posts=posts)
 
 
 @app.route('/')
@@ -226,7 +229,7 @@ def get_subscriptions_list():
     db_sess = db_session.create_session()
 
     user = db_sess.query(User).get(current_user.id)
-    print(user.name, user.surname, user.id,)
+    # print(user.name, user.surname, user.id)
     # текущий пользователь
     if user.subscriptions:
         # если есть подписки:
