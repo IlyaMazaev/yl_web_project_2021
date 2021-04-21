@@ -2,7 +2,7 @@
 
 {% block content %}
 <br><h1 class="text-center">Регистрация</h1>
-<div action="" method="post">
+<form action="" method="post">
     {{ form.hidden_tag() }}
     <div>
         <h3>{{ form.email.label }}</h3>
@@ -51,8 +51,9 @@
     </div>
     <div class="row">
         <p class="col">{{ form.submit(type="submit", class="btn btn-primary") }}</p>
-        <div class="col">{{ message }}</div>
+        {% if message %}
+        <div class="col alert alert-danger">{{ message }}</div>
+        {% endif %}
     </div>
-</div>
 </form>
 {% endblock %}
