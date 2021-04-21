@@ -34,7 +34,7 @@ def index():
         subscriptions_list = get_subscriptions_list()
         # список id пользователей на которых подписан текущий пользователь
 
-        posts = db_sess.query(Post).filter(Post.creator.in_(subscriptions_list)) # .order_by(-1 * Post.id)
+        posts = db_sess.query(Post).filter((Post.creator.in_(subscriptions_list)) | (Post.creator == current_user.id)) # .order_by(-1 * Post.id)
         posts_for_template = []
         for post in posts:
             posts_for_template.append((post, os.path.exists(f'static/img/file_{post.id}.jpg'),
@@ -63,8 +63,12 @@ def users_posts(creator):
     db_sess = db_session.create_session()
 
     posts = db_sess.query(Post).filter(Post.creator == creator)
-    # список нужных постов (те, у кого создатель - переденный параметр)
-    return render_template("index.html", title='записи', posts=posts)
+    posts_for_template = []
+    for post in posts:
+        posts_for_template.append((post, os.path.exists(f'static/img/file_{post.id}.jpg'),
+                                   f'file_{post.id}.jpg'))
+    print(posts_for_template)
+    return render_template("index.html", title='записи', posts=posts_for_template)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -159,10 +163,11 @@ def subscriptions_list():
 
     subscriptions_list = get_subscriptions_list()
     # список id пользователей на которых подписан текущий пользователь
-
-    users = db_sess.query(User).filter(User.id.in_(subscriptions_list))
+    print(subscriptions_list)
+    users = db_sess.query(User).filter(User.id != current_user.id)
     # список нужных постов (те, у кого создатель - тот на кого подписан пользователь)
-    return render_template("subscriptions_list.html", title='подписки', users=users)
+    return render_template("subscriptions_list.html", title='подписки', users=users,
+                           sub = subscriptions_list)
 
 
 @app.route('/all_users')
@@ -190,11 +195,9 @@ def subscribe(id):
     # список id пользователей на которых подписан текущий пользователь
     subscriptions_list.append(id)
     # удаление id  в список
-    user.subscriptions = ', '.join(sorted(subscriptions_list))
+    user.subscriptions = ', '.join(map(str, sorted(subscriptions_list)))
     db_sess.commit()
-    # запись изменнений в user и базу данных
-
-    # return redirect(/all_users)
+    return redirect("/subscriptions")
 
 
 @app.route('/unsubscribe/<int:id>')
@@ -206,14 +209,13 @@ def unsubscribe(id):
     # текущий пользователь
     subscriptions_list = get_subscriptions_list()
     # список id пользователей на которых подписан текущий пользователь
-
+    print(subscriptions_list)
     subscriptions_list.remove(id)
     # удаление id из списка
-    user.subscriptions = ', '.join(subscriptions_list)
+    user.subscriptions = ', '.join(map(str, subscriptions_list))
     db_sess.commit()
     # запись изменнений в user и базу данных
-
-    # return redirect(/subscriptions)
+    return redirect("/subscriptions")
 
 
 @app.route('/confirm_logout')

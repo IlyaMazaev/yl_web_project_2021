@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+<br><h1 class="text-center">Ваши подписки</h1>
+{% for item in users %}
+<div class="container rounded bg-post mt-4 p-3">
+    <div class="row">
+        <div class="col text-center">
+            <h6>{{ item.name }} {{ item.surname }}</h6>
+        </div>
+        <div class="col text-center">
+            <a class="btn btn-dark" href="/posts/{{ item.id }}">Показать записи</a>
+        </div>
+        {% if item.id in sub %}
+        <div class="col text-center">
+            <a class="btn btn-danger" href="/unsubscribe/{{ item.id }}">Отписаться</a>
+        </div>
+        {% else %}
+        <div class="col text-center">
+            <a class="btn btn-success" href="/subscribe/{{ item.id }}">Подписаться</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
