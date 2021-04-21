@@ -15,13 +15,19 @@
             <nav class="navbar d-flex align-text-center">
                 <h1 href="#">Social site</h1>
                 <a class="btn btn-secondary ms-3" href="/posts">Лента новостей</a>
+                {% if not current_user.is_authenticated %}
                 <div>
                     <a class="btn btn-primary" href="/register">Зарегистрироваться</a>
                     <a class="btn btn-success" href="/login">Войти</a>
                 </div>
+                {% else %}
+                <div>
+                    <a class="btn btn-light" href="/confirm_logout">{{ current_user.name }}</a>
+                </div>
+                {% endif %}
             </nav>
         </header>
-        <main role="main" class="container">
+        <main role="main">
             {% block content %}{% endblock %}
         </main>
     </body>
