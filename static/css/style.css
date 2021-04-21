@@ -1,15 +1,3 @@
-h1 {
-   width: 150px;
-   height: 50px;
-   background: url('/static/img/MARS-emblem.png');
-   text-indent: 170px;
-}
-
-h4 {
-   color: #002ee4;
-   margin-left: 20px;
-}
-
-p {
-  margin: 8px
+nav {
+    background-color: royalblue;
 }
