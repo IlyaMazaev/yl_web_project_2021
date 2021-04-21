@@ -1,4 +1,21 @@
 {% extends 'base.html' %}
 {% block content %}
-<a class="row btn btn-secondary" href="/add_post">Новая запись</a>
+<br><a class="col btn btn-secondary" href="/add_post">Новая запись</a>
+{% for item in posts %}
+<div class="container rounded bg-post mt-4 pt-3">
+    <div class="row row-cols-1">
+        <div class="col">
+            <p class="form-control">{{ item[0].text }}</p>
+        </div>
+        {% if item[1] %}
+        <div class="col">
+            <img class="img-fluid" src="../static/img/{{ item[2] }}" alt="Photo">
+        </div>
+        {% endif %}
+        <div class="col">
+            <p style="color: dimgrey;">Дата создания: {{ item[0].modified_date }}</p>
+        </div>
+    </div>
+</div>
+{% endfor %}
 {% endblock %}

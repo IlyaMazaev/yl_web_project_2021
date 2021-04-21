@@ -28,8 +28,8 @@ def main():
 @app.route('/posts')
 def index():
     # главная страница
+    db_sess = db_session.create_session()
     try:
-        db_sess = db_session.create_session()
 
         subscriptions_list = get_subscriptions_list()
         # список id пользователей на которых подписан текущий пользователь
@@ -37,8 +37,8 @@ def index():
         posts = db_sess.query(Post).filter(Post.creator.in_(subscriptions_list)) # .order_by(-1 * Post.id)
         posts_for_template = []
         for post in posts:
-            posts_for_template.append((post, os.path.exists(f'db/users_content_data/file_{post.id}.jpg')))
-            print(f'file_{post.id}.jpg')
+            posts_for_template.append((post, os.path.exists(f'static/img/file_{post.id}.jpg'),
+                                       f'file_{post.id}.jpg'))
         print(posts_for_template)
         # список нужных постов (те, у кого создатель - тот на кого подписан пользователь)
 
@@ -46,13 +46,11 @@ def index():
 
     except AttributeError:
         # если пользователь не зарегистрировани, то показываются все новости всех пользователей
-        db_sess = db_session.create_session()
-
         posts = db_sess.query(Post).all() # .order_by(-1 * Post.id)
         posts_for_template = []
         for post in posts:
-            posts_for_template.append((post, os.path.exists(f'db/users_content_data/file_{post.id}.jpg')))
-            print(f'file_{post.id}.jpg')
+            posts_for_template.append((post, os.path.exists(f'static/img/file_{post.id}.jpg'),
+                                       f'file_{post.id}.jpg'))
         print(posts_for_template)
         # список всех постов
         return render_template("index.html", title='записи', posts=posts_for_template)
@@ -131,7 +129,7 @@ def add_post():
             else:
                 last_id = 0
             # сохраниение фаила с именем "file_id записи к которой он отностися.jpg"
-            file.save(f'db/users_content_data/file_{last_id + 1}.jpg')
+            file.save(f'static/img/file_{last_id + 1}.jpg')
 
         db_sess.add(post)
         db_sess.commit()
@@ -192,7 +190,7 @@ def subscribe(id):
     # список id пользователей на которых подписан текущий пользователь
     subscriptions_list.append(id)
     # удаление id  в список
-    user.subscribtions = ', '.join(sorted(subscriptions_list))
+    user.subscriptions = ', '.join(sorted(subscriptions_list))
     db_sess.commit()
     # запись изменнений в user и базу данных
 
@@ -211,7 +209,7 @@ def unsubscribe(id):
 
     subscriptions_list.remove(id)
     # удаление id из списка
-    user.subscribtions = ', '.join(subscriptions_list)
+    user.subscriptions = ', '.join(subscriptions_list)
     db_sess.commit()
     # запись изменнений в user и базу данных
 
