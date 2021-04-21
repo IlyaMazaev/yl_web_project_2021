@@ -12,9 +12,10 @@
     </head>
     <body>
         <header>
-            <nav class="navbar d-flex align-text-center">
-                <h1 href="#">Social site</h1>
-                <a class="btn btn-secondary ms-3" href="/posts">Лента новостей</a>
+            <nav class="navbar d-flex justify-content-between">
+                <div>
+                    <h1 href="#">Social site</h1>
+                </div>
                 {% if not current_user.is_authenticated %}
                 <div>
                     <a class="btn btn-primary" href="/register">Зарегистрироваться</a>
@@ -22,12 +23,14 @@
                 </div>
                 {% else %}
                 <div>
-                    <a class="btn btn-light" href="/confirm_logout">{{ current_user.name }}</a>
+                    <a class="btn btn-info" href="/subscriptions">Подписки</a>
+                    <a class="btn btn-secondary ms-3" href="/posts">Лента новостей</a>
                 </div>
+                <a class="btn btn-light" href="/confirm_logout">{{ current_user.name }}</a>
                 {% endif %}
             </nav>
         </header>
-        <main role="main">
+        <main role="main" class="container">
             {% block content %}{% endblock %}
         </main>
     </body>
