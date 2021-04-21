@@ -212,11 +212,14 @@ def load_user(user_id):
 
 
 def get_subscriptions_list():
+    # получение списка подписок текущего пользователя
     db_sess = db_session.create_session()
 
     user = db_sess.query(User).get(current_user.id)
+    # print(user.name, user.surname, user.id,)
     # текущий пользователь
     if user.subscriptions:
+        # если есть подписки:
         subscriptions = list(map(int, user.subscriptions.split(',')))
     else:
         subscriptions = []
