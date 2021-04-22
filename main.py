@@ -34,7 +34,7 @@ def index():
         subscriptions_list = get_subscriptions_list()
         # список id пользователей на которых подписан текущий пользователь
 
-        posts = db_sess.query(Post).filter((Post.creator.in_(subscriptions_list)) | (Post.creator == current_user.id)) # .order_by(-1 * Post.id)
+        posts = db_sess.query(Post).order_by(-1 * Post.id).filter((Post.creator.in_(subscriptions_list)) | (Post.creator == current_user.id))
         posts_for_template = []
         for post in posts:
             posts_for_template.append((post, os.path.exists(f'static/img/file_{post.id}.jpg'),
@@ -46,7 +46,7 @@ def index():
 
     except AttributeError:
         # если пользователь не зарегистрировани, то показываются все новости всех пользователей
-        posts = db_sess.query(Post).all() # .order_by(-1 * Post.id)
+        posts = db_sess.query(Post).order_by(-1 * Post.id).all()
         posts_for_template = []
         for post in posts:
             posts_for_template.append((post, os.path.exists(f'static/img/file_{post.id}.jpg'),
