@@ -216,6 +216,26 @@ def unsubscribe(id):
     return redirect("/subscriptions")
 
 
+@app.route('/add_like/<int:id>')
+@login_required
+def add_like(id):
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).get(current_user.id)
+    # текущий пользователь
+    liked_by_user = list(map(int, user.posts_liked.split(',')))
+
+    if id not in liked_by_user:
+        # если пользоваетель ещё не лайкнул запись:
+        post = db_sess.query(Post).get(id)
+        # пост с переданным id
+        liked_by_user.append(id)
+        # удаление id  в список
+        user.subscriptions = ', '.join(map(str, sorted(liked_by_user)))
+
+        post.likes += 1
+        db_sess.commit()
+
+
 @app.route('/confirm_logout')
 @login_required
 def confirm_logout():

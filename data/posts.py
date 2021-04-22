@@ -17,3 +17,5 @@ class Post(SqlAlchemyBase, SerializerMixin):
 
     modified_date = sqlalchemy.Column(sqlalchemy.DateTime,
                                       default=datetime.datetime.now)
+
+    likes = sqlalchemy.Column(sqlalchemy.Integer)

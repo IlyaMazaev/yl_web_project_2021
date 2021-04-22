@@ -27,6 +27,9 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     subscriptions = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     # список id подписок пользователя = "str(id), str(id), str(id)"
 
+    posts_liked = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    # список id лайкнутых записей = "str(id), str(id), str(id)"
+
     def set_password(self, password):
         self.hashed_password = generate_password_hash(password)
 
