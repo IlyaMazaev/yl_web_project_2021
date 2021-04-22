@@ -164,10 +164,9 @@ def subscriptions_list():
     subscriptions_list = get_subscriptions_list()
     # список id пользователей на которых подписан текущий пользователь
     print(subscriptions_list)
-    users = db_sess.query(User).filter(User.id != current_user.id)
+    users = db_sess.query(User).filter(User.id.in_(subscriptions_list) | (User.id == current_user.id))
     # список нужных постов (те, у кого создатель - тот на кого подписан пользователь)
-    return render_template("subscriptions_list.html", title='подписки', users=users,
-                           sub = subscriptions_list)
+    return render_template("subscriptions_list.html", title='подписки', users=users, flag=0)
 
 
 @app.route('/all_users')
@@ -179,9 +178,9 @@ def all_users_list():
     subscriptions_list = get_subscriptions_list()
     # список id пользователей на которых подписан текущий пользователь
 
-    users = db_sess.query(User).filter(User.id.notin_(subscriptions_list))
+    users = db_sess.query(User).filter(User.id.notin_(subscriptions_list), User.id != current_user.id)
     # список нужных постов (те, у кого создатель - тот на кого не подписан пользователь)
-    return render_template("subscriptions_list.html", title='подписки', users=users)
+    return render_template("subscriptions_list.html", title='подписки', users=users, flag=1)
 
 
 @app.route('/subscribe/<int:id>')
@@ -197,7 +196,7 @@ def subscribe(id):
     # удаление id  в список
     user.subscriptions = ', '.join(map(str, sorted(subscriptions_list)))
     db_sess.commit()
-    return redirect("/subscriptions")
+    return redirect("/all_users")
 
 
 @app.route('/unsubscribe/<int:id>')

@@ -1,6 +1,12 @@
 {% extends 'base.html' %}
 {% block content %}
+{% if flag %}
+<br><h1 class="text-center">Подписаться</h1>
+<br><a class="btn btn-secondary" href="/subscriptions">Вернуться к подпискам</a>
+{% else %}
 <br><h1 class="text-center">Ваши подписки</h1>
+<br><a class="btn btn-success" href="/all_users">Подписаться</a>
+{% endif %}
 {% for item in users %}
 <div class="container rounded bg-post mt-4 p-3">
     <div class="row">
@@ -10,13 +16,17 @@
         <div class="col text-center">
             <a class="btn btn-dark" href="/posts/{{ item.id }}">Показать записи</a>
         </div>
-        {% if item.id in sub %}
+        {% if item.id == current_user.id %}
         <div class="col text-center">
-            <a class="btn btn-danger" href="/unsubscribe/{{ item.id }}">Отписаться</a>
+            <h6 class="text-dark">Это вы</h6>
+        </div>
+        {% elif flag %}
+        <div class="col text-center">
+            <a class="btn btn-success" href="/subscribe/{{ item.id }}">Подписаться</a>
         </div>
         {% else %}
         <div class="col text-center">
-            <a class="btn btn-success" href="/subscribe/{{ item.id }}">Подписаться</a>
+            <a class="btn btn-danger" href="/unsubscribe/{{ item.id }}">Отписаться</a>
         </div>
         {% endif %}
     </div>
