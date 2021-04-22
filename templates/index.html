@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-{% if current_user.is_authenticated %}
+{% if current_user.is_authenticated and not other %}
 <br><a class="col btn btn-secondary" href="/add_post">Новая запись</a>
 {% endif %}
 {% for item in posts %}
@@ -20,11 +20,11 @@
     <div class="row row-cols-2">
         {% if item[0].id not in liked %}
         <div class="col">
-            <p class="text-danger">Лайки: {{ item[0].likes }}  {% if current_user.is_authenticated %}<a class="btn btn-danger" href="/add_like/{{ item[0].id }}">♡</a>{% endif %}</p>
+            <h5 class="text-danger">Лайки: {{ item[0].likes }}  {% if current_user.is_authenticated and not other %}<a class="btn btn-danger" href="/add_like/{{ item[0].id }}">♡</a>{% endif %}</h5>
         </div>
         {% else %}
         <div class="col">
-            <p class="text-danger">Лайки: {{ item[0].likes }}  {% if current_user.is_authenticated %}<a class="btn btn-danger" href="/delete_like/{{ item[0].id }}">♥</a>{% endif %}</p>
+            <h5 class="text-danger">Лайки: {{ item[0].likes }}  {% if current_user.is_authenticated and not other %}<a class="btn btn-danger" href="/delete_like/{{ item[0].id }}">♥</a>{% endif %}</h5>
         </div>
         {% endif %}
         {% if current_user.id == item[0].creator %}

@@ -56,14 +56,16 @@ def index():
         print(posts_for_template)
         liked = []
         # список всех постов
-        return render_template("index.html", title='записи', posts=posts_for_template, usr=users, liked=liked)
+        return render_template("index.html", title='записи', posts=posts_for_template, usr=users, liked=liked, other=False)
 
 
 @app.route('/')
 @app.route('/posts/<int:creator>')
+@login_required
 def users_posts(creator):
     # главная страница с записами только определённого пользователя
     db_sess = db_session.create_session()
+    users = db_sess.query(User)
 
     posts = db_sess.query(Post).filter(Post.creator == creator)
     posts_for_template = []
@@ -71,7 +73,11 @@ def users_posts(creator):
         posts_for_template.append((post, os.path.exists(f'static/img/file_{post.id}.jpg'),
                                    f'file_{post.id}.jpg'))
     print(posts_for_template)
-    return render_template("index.html", title='записи', posts=posts_for_template)
+    if users.get(current_user.id).posts_liked:
+        liked = list(map(int, users.get(current_user.id).posts_liked.split(", ")))
+    else:
+        liked = []
+    return render_template("index.html", title='записи', posts=posts_for_template, usr=users, liked=liked, other=True)
 
 
 @app.route('/register', methods=['GET', 'POST'])
