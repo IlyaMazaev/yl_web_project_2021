@@ -28,7 +28,6 @@ def index():
     db_sess = db_session.create_session()
     users = db_sess.query(User)
     try:
-
         subscriptions_list = get_subscriptions_list()
         # список id пользователей на которых подписан текущий пользователь
 
@@ -36,8 +35,9 @@ def index():
             (Post.creator.in_(subscriptions_list)) | (Post.creator == current_user.id))
         posts_for_template = []
         for post in posts:
+
             posts_for_template.append((post, os.path.exists(f'static/img/file_{post.id}.jpg'),
-                                       f'file_{post.id}.jpg'))
+                                       f'file_{post.id}.jpg', current_user.id in (post.creator, 1, 2)))
         print(posts_for_template)
         if users.get(current_user.id).posts_liked:
             liked = list(map(int, users.get(current_user.id).posts_liked.split(", ")))
@@ -49,13 +49,13 @@ def index():
     except AttributeError:
         # если пользователь не зарегистрировани, то показываются все новости всех пользователей
         posts = db_sess.query(Post).order_by(-1 * Post.id).all()
+        # список всех постов
         posts_for_template = []
         for post in posts:
             posts_for_template.append((post, os.path.exists(f'static/img/file_{post.id}.jpg'),
-                                       f'file_{post.id}.jpg'))
+                                       f'file_{post.id}.jpg', False))
         print(posts_for_template)
         liked = []
-        # список всех постов
         return render_template("index.html", title='записи', posts=posts_for_template, usr=users, liked=liked, other=False)
 
 
@@ -226,13 +226,13 @@ def unsubscribe(id):
     # текущий пользователь
     subscriptions_list = get_subscriptions_list()
     # список id пользователей на которых подписан текущий пользователь
-    print(subscriptions_list)
-    subscriptions_list.remove(id)
-    # удаление id из списка
-    user.subscriptions = ', '.join(map(str, subscriptions_list))
-    db_sess.commit()
-    # запись изменнений в user и базу данных
-    return redirect("/subscriptions")
+    if id in subscriptions_list:
+        subscriptions_list.remove(id)
+        # удаление id из списка
+        user.subscriptions = ', '.join(map(str, subscriptions_list))
+        db_sess.commit()
+        # запись изменнений в user и базу данных
+        return redirect("/subscriptions")
 
 
 @app.route('/add_like/<int:id>')
@@ -263,12 +263,14 @@ def add_like(id):
 def delete_like(id):
     db_sess = db_session.create_session()
     user = db_sess.query(User).get(current_user.id)
+
     if user.posts_liked is not None:
         liked_by_user = list(map(int, user.posts_liked.split(', ')))
     else:
         liked_by_user = []
+
     if id in liked_by_user:
-        # если пользоваетель ещё не лайкнул запись:
+        # если пользоваетель лайкнул запись:
         post = db_sess.query(Post).get(id)
         # пост с переданным id
         liked_by_user.remove(id)

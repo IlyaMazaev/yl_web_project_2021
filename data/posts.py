@@ -1,7 +1,9 @@
 import datetime
+
 import sqlalchemy
 from sqlalchemy import orm
 from sqlalchemy_serializer import SerializerMixin
+
 from .db_session import SqlAlchemyBase
 
 
@@ -15,7 +17,7 @@ class Post(SqlAlchemyBase, SerializerMixin):
 
     text = sqlalchemy.Column(sqlalchemy.String, nullable=True)
 
-    modified_date = sqlalchemy.Column(sqlalchemy.DateTime,
-                                      default=datetime.datetime.now)
+    modified_date = sqlalchemy.Column(sqlalchemy.String,
+                                      default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     likes = sqlalchemy.Column(sqlalchemy.Integer)
