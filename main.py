@@ -26,6 +26,7 @@ def main():
 def index():
     # главная страница
     db_sess = db_session.create_session()
+    users = db_sess.query(User)
     try:
 
         subscriptions_list = get_subscriptions_list()
@@ -38,9 +39,12 @@ def index():
             posts_for_template.append((post, os.path.exists(f'static/img/file_{post.id}.jpg'),
                                        f'file_{post.id}.jpg'))
         print(posts_for_template)
+        if users.get(current_user.id).posts_liked:
+            liked = list(map(int, users.get(current_user.id).posts_liked.split(", ")))
+        else:
+            liked = []
         # список нужных постов (те, у кого создатель - тот на кого подписан пользователь)
-
-        return render_template("index.html", title='записи', posts=posts_for_template)
+        return render_template("index.html", title='записи', posts=posts_for_template, usr=users, liked=liked)
 
     except AttributeError:
         # если пользователь не зарегистрировани, то показываются все новости всех пользователей
@@ -50,8 +54,9 @@ def index():
             posts_for_template.append((post, os.path.exists(f'static/img/file_{post.id}.jpg'),
                                        f'file_{post.id}.jpg'))
         print(posts_for_template)
+        liked = []
         # список всех постов
-        return render_template("index.html", title='записи', posts=posts_for_template)
+        return render_template("index.html", title='записи', posts=posts_for_template, usr=users, liked=liked)
 
 
 @app.route('/')
@@ -144,9 +149,17 @@ def add_post():
 @login_required
 def post_delete(id):
     db_sess = db_session.create_session()
-    post = db_sess.query(Post).filter(Post.id == id,
-                                      ((Post.creator == current_user) | (current_user.id == 1))).first()
+    post = db_sess.query(Post).filter(Post.id == id).first()
+    users = db_sess.query(User)
     if post:
+        for user in users:
+            if user.posts_liked is not None:
+                liked = list(map(int, user.posts_liked.split(", ")))
+            else:
+                liked = []
+            if id in liked:
+                liked.remove(id)
+            user.posts_liked = ", ".join(liked) if liked else None
         db_sess.delete(post)
         db_sess.commit()
     else:
@@ -222,18 +235,46 @@ def add_like(id):
     db_sess = db_session.create_session()
     user = db_sess.query(User).get(current_user.id)
     # текущий пользователь
-    liked_by_user = list(map(int, user.posts_liked.split(',')))
-
+    if user.posts_liked is not None:
+        liked_by_user = list(map(int, user.posts_liked.split(', ')))
+    else:
+        liked_by_user = []
     if id not in liked_by_user:
         # если пользоваетель ещё не лайкнул запись:
         post = db_sess.query(Post).get(id)
         # пост с переданным id
         liked_by_user.append(id)
         # удаление id  в список
-        user.subscriptions = ', '.join(map(str, sorted(liked_by_user)))
+        user.posts_liked = ', '.join(map(str, sorted(liked_by_user)))
 
         post.likes += 1
         db_sess.commit()
+    return redirect("/")
+
+
+@app.route('/delete_like/<int:id>')
+@login_required
+def delete_like(id):
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).get(current_user.id)
+    if user.posts_liked is not None:
+        liked_by_user = list(map(int, user.posts_liked.split(', ')))
+    else:
+        liked_by_user = []
+    if id in liked_by_user:
+        # если пользоваетель ещё не лайкнул запись:
+        post = db_sess.query(Post).get(id)
+        # пост с переданным id
+        liked_by_user.remove(id)
+        # удаление id  в список
+        if not liked_by_user:
+            user.posts_liked = None
+        else:
+            user.posts_liked = ', '.join(map(str, sorted(liked_by_user)))
+        post.likes -= 1
+        db_sess.commit()
+    return redirect("/")
+
 
 
 @app.route('/confirm_logout')
