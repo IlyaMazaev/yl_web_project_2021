@@ -1,8 +1,6 @@
 from flask import Flask, render_template, redirect, request, abort
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 
-from flask_ngrok import run_with_ngrok
-
 from data import db_session
 from data.posts import Post
 from data.users import User
@@ -12,8 +10,7 @@ from forms.user_forms import RegisterForm, LoginForm
 import os
 
 app = Flask(__name__)
-run_with_ngrok(app)
-app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
+app.config['SECRET_KEY'] = '9CB2FA9ED59693626BC2'
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -34,7 +31,8 @@ def index():
         subscriptions_list = get_subscriptions_list()
         # список id пользователей на которых подписан текущий пользователь
 
-        posts = db_sess.query(Post).order_by(-1 * Post.id).filter((Post.creator.in_(subscriptions_list)) | (Post.creator == current_user.id))
+        posts = db_sess.query(Post).order_by(-1 * Post.id).filter(
+            (Post.creator.in_(subscriptions_list)) | (Post.creator == current_user.id))
         posts_for_template = []
         for post in posts:
             posts_for_template.append((post, os.path.exists(f'static/img/file_{post.id}.jpg'),
@@ -121,7 +119,8 @@ def add_post():
         db_sess = db_session.create_session()
         # запсь в Post текста записи и создателя
         post = Post(text=form.text.data,
-                    creator=current_user.id)
+                    creator=current_user.id,
+                    likes=0)
 
         if form.file.data:
             # если есть файл
