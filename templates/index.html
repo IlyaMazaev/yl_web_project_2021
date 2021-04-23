@@ -3,7 +3,7 @@
 {% if current_user.is_authenticated and not other %}
 <br><div class="row">
     <a class="col btn btn-secondary" href="/add_post">Новая запись</a>
-    <a class="col btn btn-warning" href="/posts/{{current_user.id}}">Мои записи</a>
+    <a class="col btn btn-primary" href="/posts/{{current_user.id}}">Мои записи</a>
 </div>
 {% endif %}
 {% for item in posts %}

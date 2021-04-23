@@ -25,7 +25,8 @@ def main():
         format='%(asctime)s %(levelname)s %(name)s %(message)s',
         level=logging.INFO)
 
-    app.run()
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
 
 
 @app.route('/')
@@ -58,7 +59,7 @@ def index():
         # если пользователь не зарегистрировани, то показываются все новости всех пользователей
         posts = db_sess.query(Post).order_by(-1 * Post.id).all()
         # список всех постов
-        posts_for_template = []
+        posts_for_template = [(Post(text='Првиет', creator=2, likes=0, id=0, modified_date=''), False, '0', False)]
         for post in posts:
             posts_for_template.append((post, os.path.exists(f'static/img/file_{post.id}.jpg'),
                                        f'file_{post.id}.jpg', False))
