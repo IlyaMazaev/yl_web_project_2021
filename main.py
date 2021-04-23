@@ -56,7 +56,7 @@ def index():
         # если пользователь не зарегистрировани, то показываются все новости всех пользователей
         posts = db_sess.query(Post).order_by(-1 * Post.id).all()
         # список всех постов
-        posts_for_template = []
+        posts_for_template = [(Post(text='Првиет', creator=2, likes=0, id=0, modified_date=''), False, '0', False)]
         for post in posts:
             posts_for_template.append((post, os.path.exists(f'static/img/file_{post.id}.jpg'),
                                        f'file_{post.id}.jpg', False))
