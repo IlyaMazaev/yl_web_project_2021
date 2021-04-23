@@ -20,9 +20,8 @@ login_manager.init_app(app)
 def main():
     db_session.global_init("db/user_data.db")
     logging.basicConfig(
-        filename='logs.log',
-        format='%(asctime)s %(levelname)s %(name)s %(message)s')
-
+         filename='logs.log',
+         format='%(asctime)s %(levelname)s %(name)s %(message)s')
     app.run()
 
 
@@ -49,7 +48,8 @@ def index():
         else:
             liked = []
         # список нужных постов (те, у кого создатель - тот на кого подписан пользователь)
-        return render_template("index.html", title='записи', posts=posts_for_template, usr=users, liked=liked)
+        return render_template("index.html", title='записи', posts=posts_for_template, usr=users, liked=liked,
+                               other=False)
 
     except AttributeError:
         # если пользователь не зарегистрировани, то показываются все новости всех пользователей
@@ -191,8 +191,7 @@ def subscriptions_list():
 
     subscriptions_list = get_subscriptions_list()
     # список id пользователей на которых подписан текущий пользователь
-    print(subscriptions_list)
-    users = db_sess.query(User).filter(User.id.in_(subscriptions_list) | (User.id == current_user.id))
+    users = db_sess.query(User).filter(User.id.in_(subscriptions_list), User.id != current_user.id)
     # список нужных постов (те, у кого создатель - тот на кого подписан пользователь)
     return render_template("subscriptions_list.html", title='подписки', users=users, flag=0)
 
@@ -265,7 +264,7 @@ def add_like(id):
 
         post.likes += 1
         db_sess.commit()
-    return redirect("/")
+    return redirect(f"/#{id}")
 
 
 @app.route('/delete_like/<int:id>')
@@ -291,7 +290,7 @@ def delete_like(id):
             user.posts_liked = ', '.join(map(str, sorted(liked_by_user)))
         post.likes -= 1
         db_sess.commit()
-    return redirect("/")
+    return redirect(f"/#{id}")
 
 
 @app.route('/confirm_logout')
@@ -334,7 +333,6 @@ def get_subscriptions_list():
     # список id пользователей на которых подписан текущий пользователь
 
     return subscriptions
-
 
 if __name__ == '__main__':
     main()
