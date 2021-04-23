@@ -13,7 +13,7 @@
     <p style="color: dimgrey;">{{ item[0].modified_date }}</p>
     <div class="row">
         <div class="col">
-            <p class="form-control">{{ item[0].text }}</p>
+            <p>{{ item[0].text }}</p>
         </div>
     </div>
     <div class="row">
@@ -24,11 +24,11 @@
         {% endif %}
     </div>
     <div class="row row-cols-2">
-        {% if item[0].id not in liked %}
+        {% if item[0].id not in liked and item[0].id != 0 %}
         <div class="col">
             <h5 class="text-danger">Лайки: {{ item[0].likes }}  {% if current_user.is_authenticated and not other %}<a class="btn btn-danger" href="/add_like/{{ item[0].id }}">♡</a>{% endif %}</h5>
         </div>
-        {% else %}
+        {% elif item[0].id != 0 %}
         <div class="col">
             <h5 class="text-danger">Лайки: {{ item[0].likes }}  {% if current_user.is_authenticated and not other %}<a class="btn btn-danger" href="/delete_like/{{ item[0].id }}">♥</a>{% endif %}</h5>
         </div>
