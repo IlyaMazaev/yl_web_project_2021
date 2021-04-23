@@ -1,4 +1,7 @@
-from flask import Flask, render_template, redirect, request, abort, send_from_directory
+import logging
+import os
+
+from flask import Flask, render_template, redirect, abort, send_from_directory
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 
 from data import db_session
@@ -7,8 +10,6 @@ from data.users import User
 from forms.post_forms import AddNewPostForm
 from forms.user_forms import RegisterForm, LoginForm
 
-import os
-import logging
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '9CB2FA9ED59693626BC2'
@@ -20,8 +21,10 @@ login_manager.init_app(app)
 def main():
     db_session.global_init("db/user_data.db")
     logging.basicConfig(
-         filename='logs.log',
-         format='%(asctime)s %(levelname)s %(name)s %(message)s')
+        filename='logs.log',
+        format='%(asctime)s %(levelname)s %(name)s %(message)s',
+        level=logging.INFO)
+
     app.run()
 
 
@@ -78,7 +81,7 @@ def users_posts(creator):
     for post in posts:
         posts_for_template.append((post, os.path.exists(f'static/img/file_{post.id}.jpg'),
                                    f'file_{post.id}.jpg'))
-    print(posts_for_template)
+    # print(posts_for_template)
     if users.get(current_user.id).posts_liked:
         liked = list(map(int, users.get(current_user.id).posts_liked.split(", ")))
     else:
@@ -239,6 +242,7 @@ def unsubscribe(id):
         subscriptions_list.remove(id)
         # удаление id из списка
         user.subscriptions = ', '.join(map(str, subscriptions_list))
+        logging.info(f'{user.id} subscroibed {id}')
         db_sess.commit()
         # запись изменнений в user и базу данных
         return redirect("/subscriptions")
@@ -263,6 +267,7 @@ def add_like(id):
         user.posts_liked = ', '.join(map(str, sorted(liked_by_user)))
 
         post.likes += 1
+        logging.info(f'add like post id: {post.id}; user id: {user.id}')
         db_sess.commit()
     return redirect(f"/#{id}")
 
@@ -289,6 +294,7 @@ def delete_like(id):
         else:
             user.posts_liked = ', '.join(map(str, sorted(liked_by_user)))
         post.likes -= 1
+        logging.info(f'delete like post id: {post.id}; user id: {user.id}')
         db_sess.commit()
     return redirect(f"/#{id}")
 
@@ -333,6 +339,7 @@ def get_subscriptions_list():
     # список id пользователей на которых подписан текущий пользователь
 
     return subscriptions
+
 
 if __name__ == '__main__':
     main()
