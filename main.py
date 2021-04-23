@@ -10,6 +10,7 @@ from data.users import User
 from forms.post_forms import AddNewPostForm
 from forms.user_forms import RegisterForm, LoginForm
 
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '9CB2FA9ED59693626BC2'
 
@@ -50,7 +51,8 @@ def index():
         else:
             liked = []
         # список нужных постов (те, у кого создатель - тот на кого подписан пользователь)
-        return render_template("index.html", title='записи', posts=posts_for_template, usr=users, liked=liked)
+        return render_template("index.html", title='записи', posts=posts_for_template, usr=users, liked=liked,
+                               other=False)
 
     except AttributeError:
         # если пользователь не зарегистрировани, то показываются все новости всех пользователей
@@ -192,8 +194,7 @@ def subscriptions_list():
 
     subscriptions_list = get_subscriptions_list()
     # список id пользователей на которых подписан текущий пользователь
-    print(subscriptions_list)
-    users = db_sess.query(User).filter(User.id.in_(subscriptions_list) | (User.id == current_user.id))
+    users = db_sess.query(User).filter(User.id.in_(subscriptions_list), User.id != current_user.id)
     # список нужных постов (те, у кого создатель - тот на кого подписан пользователь)
     return render_template("subscriptions_list.html", title='подписки', users=users, flag=0)
 
@@ -224,7 +225,6 @@ def subscribe(id):
     subscriptions_list.append(id)
     # удаление id  в список
     user.subscriptions = ', '.join(map(str, sorted(subscriptions_list)))
-    logging.info(f'{user.id} UNsubscroibed {id}')
     db_sess.commit()
     return redirect("/all_users")
 
@@ -269,7 +269,7 @@ def add_like(id):
         post.likes += 1
         logging.info(f'add like post id: {post.id}; user id: {user.id}')
         db_sess.commit()
-    return redirect("/")
+    return redirect(f"/#{id}")
 
 
 @app.route('/delete_like/<int:id>')
@@ -296,7 +296,7 @@ def delete_like(id):
         post.likes -= 1
         logging.info(f'delete like post id: {post.id}; user id: {user.id}')
         db_sess.commit()
-    return redirect("/")
+    return redirect(f"/#{id}")
 
 
 @app.route('/confirm_logout')

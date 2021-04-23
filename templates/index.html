@@ -1,10 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
 {% if current_user.is_authenticated and not other %}
-<br><a class="col btn btn-secondary" href="/add_post">Новая запись</a>
+<br><div class="row">
+    <a class="col btn btn-secondary" href="/add_post">Новая запись</a>
+    <a class="col btn btn-warning" href="/posts/{{current_user.id}}">Мои записи</a>
+</div>
 {% endif %}
 {% for item in posts %}
-<div class="container rounded bg-post mt-4 pt-3">
+<div class="container rounded bg-post mt-4 pt-1">
+    <p><a name="{{ item[0].id }}"></a></p>
     <h5>{{ usr[item[0].creator - 1].name }} {{ usr[item[0].creator - 1].surname }}</h5>
     <p style="color: dimgrey;">{{ item[0].modified_date }}</p>
     <div class="row">
@@ -15,7 +19,7 @@
     <div class="row">
         {% if item[1] %}
         <div class="col">
-            <img class="img-fluid" src="../static/img/{{ item[2] }}" alt="Photo">
+            <img class="img-thumbnail" src="../static/img/{{ item[2] }}" alt="Photo">
         </div>
         {% endif %}
     </div>
