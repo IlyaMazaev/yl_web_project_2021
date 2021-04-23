@@ -5,7 +5,8 @@
 {% endif %}
 {% for item in posts %}
 <div class="container rounded bg-post mt-4 pt-3">
-    <h5>Автор: {{ usr[item[0].creator - 1].name }} {{ usr[item[0].creator - 1].surname }}</h5>
+    <h5>{{ usr[item[0].creator - 1].name }} {{ usr[item[0].creator - 1].surname }}</h5>
+    <p style="color: dimgrey;">{{ item[0].modified_date }}</p>
     <div class="row">
         <div class="col">
             <p class="form-control">{{ item[0].text }}</p>
@@ -34,7 +35,6 @@
         </div>
         {% endif %}
     </div>
-    <p style="color: dimgrey;">Дата создания: {{ item[0].modified_date }}</p>
 </div>
 {% endfor %}
 {% endblock %}

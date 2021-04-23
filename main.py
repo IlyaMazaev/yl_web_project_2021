@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, request, abort
+from flask import Flask, render_template, redirect, request, abort, send_from_directory
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 
 from data import db_session
@@ -8,6 +8,7 @@ from forms.post_forms import AddNewPostForm
 from forms.user_forms import RegisterForm, LoginForm
 
 import os
+import logging
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '9CB2FA9ED59693626BC2'
@@ -18,6 +19,10 @@ login_manager.init_app(app)
 
 def main():
     db_session.global_init("db/user_data.db")
+    logging.basicConfig(
+        filename='logs.log',
+        format='%(asctime)s %(levelname)s %(name)s %(message)s')
+
     app.run()
 
 
@@ -35,10 +40,10 @@ def index():
             (Post.creator.in_(subscriptions_list)) | (Post.creator == current_user.id))
         posts_for_template = []
         for post in posts:
-
             posts_for_template.append((post, os.path.exists(f'static/img/file_{post.id}.jpg'),
                                        f'file_{post.id}.jpg', current_user.id in (post.creator, 1, 2)))
-        print(posts_for_template)
+        # print(posts_for_template)
+        logging.debug(f'post request:{str(posts_for_template)}')
         if users.get(current_user.id).posts_liked:
             liked = list(map(int, users.get(current_user.id).posts_liked.split(", ")))
         else:
@@ -54,9 +59,10 @@ def index():
         for post in posts:
             posts_for_template.append((post, os.path.exists(f'static/img/file_{post.id}.jpg'),
                                        f'file_{post.id}.jpg', False))
-        print(posts_for_template)
+        # print(posts_for_template)
         liked = []
-        return render_template("index.html", title='записи', posts=posts_for_template, usr=users, liked=liked, other=False)
+        return render_template("index.html", title='записи', posts=posts_for_template, usr=users, liked=liked,
+                               other=False)
 
 
 @app.route('/')
@@ -101,6 +107,7 @@ def register():
         user.set_password(form.password.data)
         db_sess.add(user)
         db_sess.commit()
+        logging.info(f'user with id {user.id} was registered')
         return redirect('/login')
     return render_template('register.html', title='Регистрация', form=form)
 
@@ -114,6 +121,7 @@ def login():
         user = db_sess.query(User).filter(User.email == form.email.data).first()
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
+            logging.info(f'user with id {user.id} authorised')
             return redirect("/")
         return render_template('login.html',
                                message="Неправильный логин или пароль",
@@ -147,6 +155,7 @@ def add_post():
 
         db_sess.add(post)
         db_sess.commit()
+        logging.info(f'post with id {post.id} added')
         return redirect('/')
     return render_template('add_post.html', title='Добавление новой записи', form=form)
 
@@ -165,8 +174,9 @@ def post_delete(id):
                 liked = []
             if id in liked:
                 liked.remove(id)
-            user.posts_liked = ", ".join(liked) if liked else None
+            user.posts_liked = ", ".join(list(map(str, liked))) if liked else None
         db_sess.delete(post)
+        os.remove(f'static/img/file_{post.id}.jpg')
         db_sess.commit()
     else:
         abort(404)
@@ -284,7 +294,6 @@ def delete_like(id):
     return redirect("/")
 
 
-
 @app.route('/confirm_logout')
 @login_required
 def confirm_logout():
@@ -301,6 +310,13 @@ def logout():
 def load_user(user_id):
     db_sess = db_session.create_session()
     return db_sess.query(User).get(user_id)
+
+
+@app.route('/favicon.ico')
+def favicon():
+    # иконка на вкладке
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'img/favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 
 def get_subscriptions_list():
