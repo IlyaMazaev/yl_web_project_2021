@@ -10,7 +10,6 @@ from data.users import User
 from forms.post_forms import AddNewPostForm
 from forms.user_forms import RegisterForm, LoginForm
 
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '9CB2FA9ED59693626BC2'
 
@@ -59,7 +58,10 @@ def index():
         # если пользователь не зарегистрировани, то показываются все новости всех пользователей
         posts = db_sess.query(Post).order_by(-1 * Post.id).all()
         # список всех постов
-        posts_for_template = [(Post(text='Првиет', creator=2, likes=0, id=0, modified_date=''), False, '0', False)]
+
+        hello_text = open('README.txt', encoding='utf-8').read()
+        posts_for_template = [
+            (Post(text=hello_text, creator=2, likes=0, id=0, modified_date=''), True, 'file_0.jpg', False)]
         for post in posts:
             posts_for_template.append((post, os.path.exists(f'static/img/file_{post.id}.jpg'),
                                        f'file_{post.id}.jpg', False))
@@ -180,7 +182,10 @@ def post_delete(id):
                 liked.remove(id)
             user.posts_liked = ", ".join(list(map(str, liked))) if liked else None
         db_sess.delete(post)
-        os.remove(f'static/img/file_{post.id}.jpg')
+        try:
+            os.remove(f'static/img/file_{post.id}.jpg')
+        except FileNotFoundError:
+            pass
         db_sess.commit()
     else:
         abort(404)
